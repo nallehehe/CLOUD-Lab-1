@@ -1,0 +1,66 @@
+﻿@page "/"
+@using dockerLab.Models
+@using Microsoft.EntityFrameworkCore
+@using dockerLab.Data
+@inject BookDbContext BookContext
+@rendermode InteractiveServer
+
+<PageTitle>Home</PageTitle>
+
+<div class="mb-4">
+    <h3>Add Book</h3>
+    <input @bind="newBook.Title" placeholder="Title" />
+    <input @bind="newBook.Author" placeholder="Author" />
+    <button @onclick="AddBook">Add</button>
+</div>
+
+<div class="row mt-1">
+    @foreach (var book in books)
+    {
+        <div>
+            <span>@book.Title by @book.Author</span>
+            <button @onclick="() => DeleteBook(book)">Delete</button>
+        </div>
+    }
+</div>
+
+@code {
+    private List<Book> books = new List<Book>();
+
+    private Book newBook = new Book();
+
+    private async Task GetBooks()
+    {
+        books = await BookContext.Books.ToListAsync();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetBooks();
+    }
+
+    private async Task AddBook()
+    {
+        var book = new Book
+        {
+            Title = newBook.Title,
+            Author = newBook.Author
+        };
+
+        BookContext.Books.Add(book);
+        await BookContext.SaveChangesAsync();
+
+        newBook.Title = "";
+        newBook.Author = "";
+
+        await GetBooks();
+    }
+
+    private async Task DeleteBook(Book bookToDelete)
+    {
+        BookContext.Books.Remove(bookToDelete);
+        await BookContext.SaveChangesAsync();
+
+        await GetBooks(); 
+    }
+}

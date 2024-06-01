@@ -1,0 +1,26 @@
+version: '3.4'
+
+networks:
+    dockerLab:
+       driver: bridge
+
+services:
+  bookDb:
+    container_name: book-db
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    ports:
+     - 8001:1433
+    environment:
+    - ACCEPT_EULA=Y
+    - MSSQL_SA_PASSWORD=Haha123!
+    
+  dockerlab:
+    container_name: docker-app
+    image: ${DOCKER_REGISTRY-}dockerlab
+    build:
+      context: .
+      dockerfile: dockerLab/Dockerfile
+    ports:
+    - 8080:8081
+    depends_on:
+    - bookDb
